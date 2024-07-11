@@ -1,0 +1,1 @@
+-Dspring.config.location=file:./conf/test.yml
