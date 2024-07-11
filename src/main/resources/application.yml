@@ -1,0 +1,13 @@
+spring:
+    application:
+        name: lts-example
+
+app:
+    endpoints:
+        auth: https://iam.myhuaweicloud.com/v3/auth/tokens?nocatalog=true
+        lts: https://100.125.4.58:8102/v2
+    username: username
+    password: password
+    project_id: 
+    log_group_id: 
+    log_stream_id: 
