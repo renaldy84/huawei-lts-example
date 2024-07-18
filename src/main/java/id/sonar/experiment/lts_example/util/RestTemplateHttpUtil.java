@@ -15,12 +15,16 @@ import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.client.UnknownHttpStatusCodeException;
 
+import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Component
 public class RestTemplateHttpUtil {
 
+	@Getter
+	@Setter
 	@Autowired
 	private RestTemplate restTemplate;
 	

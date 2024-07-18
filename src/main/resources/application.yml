@@ -1,3 +1,6 @@
+logging:
+  config: classpath:logback-spring.xml
+  
 spring:
     application:
         name: lts-example

@@ -23,4 +23,7 @@ public class TokenDto {
     @JsonProperty("issued_at")
     String issuedAt;
     UserDto user;
+    List<String> methods;
+    DomainDto domain;
+    
 }

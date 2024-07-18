@@ -74,4 +74,5 @@ References
 
 * Collecting Logs Using  APIs
 https://support.huaweicloud.com/intl/en-us/usermanual-lts/lts_04_1032.html
+https://chatgpt.com/c/b93c182e-e170-4302-86ea-dcbf7fa40bdc
 

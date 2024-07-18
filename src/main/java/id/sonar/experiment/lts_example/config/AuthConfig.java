@@ -4,7 +4,9 @@ package id.sonar.experiment.lts_example.config;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -30,6 +32,8 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Configuration
 public class AuthConfig {
+
+    /*
     @Value("${app.username}")
     String usernameString;
 
@@ -47,9 +51,11 @@ public class AuthConfig {
     
     @Autowired
     ObjectMapper objectMapper;
+    
     @Autowired
     RestTemplateHttpUtil restTemplateHttpUtil;
 
+    String activeToken = null;
     @Bean
     public DomainDto domainDto(){
         return DomainDto.builder()
@@ -96,35 +102,42 @@ public class AuthConfig {
     public String authBody(AuthRequestDto authRequestDto){
         return JsonUtil.toJson(authRequestDto);
     }
+    
     @Bean
     public String authToken(String authBody){
-        Map<String,String> headers = new HashMap<String,String>();
-        headers.put("content-type","application/json; charset=UTF-8");
-        long startTime = System.currentTimeMillis();
-        long endTime = System.currentTimeMillis();
-        
-       
-        try{
-            LOGGER.info("getting AuthToken");
-            ResponseEntity<String> response = restTemplateHttpUtil.postJsonTemplate(authUrlString,authBody,headers);
-            HttpHeaders responseHeaders = response.getHeaders();
-            //String responseBodyString = response.getBody();
-           // AuthResponseDto authResponseDto = objectMapper.readValue(responseBodyString, AuthResponseDto.class);
+        if(Objects.isNull(activeToken)){
+            Map<String,String> headers = new HashMap<String,String>();
+            headers.put("content-type","application/json; charset=UTF-8");
+            long startTime = System.currentTimeMillis();
+            long endTime = System.currentTimeMillis();
             
-            String authToken = responseHeaders.getFirst("X-Subject-Token");
+        
+            try{
+                LOGGER.info("getting AuthToken");
+                ResponseEntity<String> response = restTemplateHttpUtil.postJsonTemplate(authUrlString,authBody,headers);
+                HttpHeaders responseHeaders = response.getHeaders();
+                //String responseBodyString = response.getBody();
+                // AuthResponseDto authResponseDto = objectMapper.readValue(responseBodyString, AuthResponseDto.class);
+                
+                String authToken = responseHeaders.getFirst("X-Subject-Token");
 
-            // LOGGER.info("token: {} | Expires at: {}",
-            //     authToken, 
-            //     authResponseDto.getToken().getExpiresAt()
-            // );
-            endTime = System.currentTimeMillis();
-            // Calculate and log elapsed time in seconds
-            long elapsedTime = (endTime - startTime) / 1000L;
-            LOGGER.info("Elapsed Time: {} seconds", String.valueOf(elapsedTime));
-            return authToken;
-        }catch(Exception error){
-            LOGGER.error(error.getMessage());
+                // LOGGER.info("token: {} | Expires at: {}",
+                //     authToken, 
+                //     authResponseDto.getToken().getExpiresAt()
+                // );
+
+                endTime = System.currentTimeMillis();
+                // Calculate and log elapsed time in seconds
+                long elapsedTime = (endTime - startTime) / 1000L;
+                LOGGER.info("Elapsed Time: {} seconds", String.valueOf(elapsedTime));
+                return authToken;
+            }catch(Exception error){
+                LOGGER.error(error.getMessage());
+            }
+            return "";
+        }else{
+            LOGGER.info("using ActiveToken");
+            return activeToken;
         }
-        return "";
-    }
+    }*/
 }

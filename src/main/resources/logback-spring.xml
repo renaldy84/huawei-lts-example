@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration scan="true" scanPeriod="1 minutes">
+   
+    <shutdownHook class="ch.qos.logback.core.hook.DelayingShutdownHook"/>
+
+    <property name="SONAR_LOG_PATTERN"
+              value="%.-1p | %d{HH:mm:ss.SSS} | [%t] %20.20c{20}.%M:%L - %m %n%ex{full}"/>
+
+    <property name="COLORED_SONAR_LOG_PATTERN"
+              value="%highlight(%.-1p) | %cyan(%d{HH:mm:ss.SSS}) | [%magenta(%t)] %yellow(%20.20c{20}).%boldYellow(%M):%green(%L) - %highlight(%m) %n%ex{full}"/>
+
+    <!-- JUL/JDK14 to Logback bridge -->
+    <contextListener class="ch.qos.logback.classic.jul.LevelChangePropagator">
+        <resetJUL>true</resetJUL>
+    </contextListener>
+    
+    <appender name="LTS" class="id.sonar.experiment.lts_example.util.LTSLogAppender">
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <pattern>${COLORED_SONAR_LOG_PATTERN}</pattern>
+        </encoder>
+        <apiEndpointString>https://localhost:8103</apiEndpointString>
+        <projectId>0d082703f700f2bc2ff9c01fc1522e58</projectId>
+        <groupId>6f496755-d559-461f-91dc-07cb90fcc047</groupId>
+        <streamId>f4636a77-88b7-4f72-b68f-ff5f79339cee</streamId>
+    </appender>
+
+     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <Target>System.out</Target>
+        <encoder>
+            <pattern>${COLORED_SONAR_LOG_PATTERN}</pattern>
+        </encoder>
+    </appender>
+
+    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <File>${LOG_PATH}/${LOG_FILE}.log</File>
+        <encoder>
+            <pattern>${SONAR_LOG_PATTERN}</pattern>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_PATH}/${LOG_FILE}.log-%d{yyyyMMdd}.%i</fileNamePattern>
+            <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                <maxFileSize>50MB</maxFileSize>
+            </timeBasedFileNamingAndTriggeringPolicy>
+            <maxHistory>3</maxHistory>
+        </rollingPolicy>
+    </appender>
+
+
+    <root level="INFO">
+        <appender-ref ref="LTS"/>
+        <appender-ref ref="STDOUT" />
+        <appender-ref ref="FILE" />
+       
+    </root>
+     <root level="DEBUG">
+        <appender-ref ref="LTS"/>
+        <appender-ref ref="STDOUT" />
+        <appender-ref ref="FILE" />
+    </root>
+</configuration>
