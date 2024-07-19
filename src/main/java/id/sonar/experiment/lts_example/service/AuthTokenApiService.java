@@ -6,11 +6,14 @@ import java.util.Map;
 import java.util.Objects;
 
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
@@ -31,131 +34,84 @@ import id.sonar.experiment.lts_example.dto.ScopeDto;
 import id.sonar.experiment.lts_example.dto.UserDto;
 import id.sonar.experiment.lts_example.util.JsonUtil;
 import id.sonar.experiment.lts_example.util.RestTemplateHttpUtil;
+import id.sonar.experiment.lts_example.util.StringUtil;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
+@Service
 public class AuthTokenApiService {
 
+    @Autowired
     private RestTemplateHttpUtil restTemplateHttpUtil;
-    private String authUrlString;
-    private String authBody;
-    private String domain;
-    private String username;
-    private String password;
-    private String activeToken;
-    private String region;
     
-    public void init(){
-        DomainDto domainDto = DomainDto.builder()
-        .name(domain)
-        .build();
+    @Value("${app.endpoints.auth}")
+    private String authUrlString;
 
-        UserDto userDto = UserDto
-        .builder()
-        .domain(domainDto)
-        .name(username)
-        .password(password)
-        .build();
-        PasswordDto passwordDto = PasswordDto.builder().user(userDto).build();
-        IdentityDto identityDto = IdentityDto
-                .builder()
-                .methods(Arrays.asList("password"))
-                .password(passwordDto)
-                .build();
+    @Autowired
+    private String authBody;
+    
+    String activeToken;
 
-        ProjectDto projectDto = ProjectDto.builder().name(region).build();
-        ScopeDto scopeDto = ScopeDto.builder().project(projectDto).build();
-        AuthDto authDto = AuthDto.builder().identity(identityDto).scope(scopeDto).build();
-        AuthRequestDto authRequestDto = AuthRequestDto.builder().auth(authDto).build();
-        this.authBody = JsonUtil.toJson(authRequestDto);
-       
 
-    }
-    public ResponseEntity<String> postJsonTemplate(String url, String body, Map<String, String> headers) {
-		System.out.println(url);
-        HttpHeaders header = new HttpHeaders();
-		for (Map.Entry<String, String> entry : headers.entrySet()) {
-			header.set(entry.getKey(), entry.getValue());
-		}
-		header.setContentType(MediaType.APPLICATION_JSON);
-		HttpEntity<String> entity = new HttpEntity<String>(body, header);
-        RestTemplate restTemplate = new RestTemplate();
-		ResponseEntity<String> response = null;
-		try {
-			response = restTemplate.postForEntity(url, entity, String.class);
-			LOGGER.trace(response.getBody());
-		}  catch (HttpClientErrorException | HttpServerErrorException | UnknownHttpStatusCodeException e) {
-            LOGGER.error("HTTP Status Code: {}, Error Message: {}", e.getRawStatusCode(), e.getMessage(), e);
-            return ResponseEntity.status(e.getRawStatusCode()).body(e.getResponseBodyAsString());
-        } catch (Exception e) {
-            LOGGER.error("An unexpected error occurred: {}", e.getMessage(), e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error occurred");
-        }
-
-		return response;
-	}
+    
     //@TODO: check expiry time. 
     public String getToken() {
-        System.out.println("getting token");
+       
         if(Objects.isNull(activeToken)){
-            System.out.println("getting token 2");
+          
             Map<String,String> headers = new HashMap<String,String>();
             headers.put("content-type","application/json; charset=UTF-8");
             long startTime = System.currentTimeMillis();
             long endTime = System.currentTimeMillis();
-            System.out.println("step 1");
+            LOGGER.info("getToken from api");
 
            
             try{
-                System.out.println("step 2");
-                
-                LOGGER.info("getting AuthToken");
+              
                 ObjectMapper objectMapper = new ObjectMapper();
                 if(Objects.isNull(restTemplateHttpUtil)){
                     restTemplateHttpUtil = new RestTemplateHttpUtil();
                 }
                 restTemplateHttpUtil.setRestTemplate(new RestTemplate());
-                ResponseEntity<String> response = this.postJsonTemplate(
+                ResponseEntity<String> response = restTemplateHttpUtil.postJsonTemplate(
                                                 authUrlString,
                                                 authBody,
                                                 headers);
                 HttpHeaders responseHeaders = response.getHeaders();
                 String responseBodyString = response.getBody();
-                System.out.println(responseBodyString);
+                
                 AuthResponseDto authResponseDto = objectMapper.readValue(responseBodyString, AuthResponseDto.class);
                 
                 String authToken = responseHeaders.getFirst("X-Subject-Token");
-                System.out.println("step 3");
-                LOGGER.info("retrieved token: {}",authToken);
-                System.out.println("step 4");
+               
                 endTime = System.currentTimeMillis();
                 // Calculate and log elapsed time in seconds
                 long elapsedTime = (endTime - startTime) / 1000L;
-                LOGGER.info("Elapsed Time: {} seconds", String.valueOf(elapsedTime));
-                if(StringUtils.isNoneBlank())
+              
+                if(StringUtils.isNoneBlank(authToken))
                     activeToken = authToken;
+
+                LOGGER.info("got token ? {} ", (StringUtils.isNoneBlank(authToken) ? "Yes" : "No"));
                 return authToken;
 
+
             }catch(JsonMappingException error){
+                System.out.println(error.getMessage());
                 LOGGER.error(error.getMessage());
             }catch(JsonProcessingException error){
                 LOGGER.error(error.getMessage());
             }
             return "";
         }else{
-            System.out.println("using activetoken");
-            LOGGER.info("using ActiveToken");
+            
             return activeToken;
         }
     }
 
     public boolean isTokenAvailable(){
-        return !Objects.isNull(activeToken);
+        return StringUtil.isNoneBlank(activeToken);
     }
 }

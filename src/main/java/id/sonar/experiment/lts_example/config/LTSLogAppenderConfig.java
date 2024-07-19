@@ -14,8 +14,6 @@ public class LTSLogAppenderConfig {
     @Autowired
     LtsApiService ltsApiService;
 
-    @Autowired
-    String authToken;
     /*
     @Bean
     public LTSLogAppender ltsLogAppender() {

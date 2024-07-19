@@ -33,7 +33,7 @@ import lombok.extern.slf4j.Slf4j;
 @Configuration
 public class AuthConfig {
 
-    /*
+    
     @Value("${app.username}")
     String usernameString;
 
@@ -56,6 +56,7 @@ public class AuthConfig {
     RestTemplateHttpUtil restTemplateHttpUtil;
 
     String activeToken = null;
+
     @Bean
     public DomainDto domainDto(){
         return DomainDto.builder()
@@ -86,6 +87,7 @@ public class AuthConfig {
     public ProjectDto projectDto(){
         return ProjectDto.builder().name(regionString).build();
     }
+
     @Bean
     public ScopeDto scopeDto(ProjectDto projectDto){
         return ScopeDto.builder().project(projectDto).build();
@@ -102,10 +104,11 @@ public class AuthConfig {
     public String authBody(AuthRequestDto authRequestDto){
         return JsonUtil.toJson(authRequestDto);
     }
-    
+    /*
     @Bean
     public String authToken(String authBody){
         if(Objects.isNull(activeToken)){
+            System.out.println("getting token : " +  authBody);
             Map<String,String> headers = new HashMap<String,String>();
             headers.put("content-type","application/json; charset=UTF-8");
             long startTime = System.currentTimeMillis();
@@ -116,15 +119,15 @@ public class AuthConfig {
                 LOGGER.info("getting AuthToken");
                 ResponseEntity<String> response = restTemplateHttpUtil.postJsonTemplate(authUrlString,authBody,headers);
                 HttpHeaders responseHeaders = response.getHeaders();
-                //String responseBodyString = response.getBody();
-                // AuthResponseDto authResponseDto = objectMapper.readValue(responseBodyString, AuthResponseDto.class);
+                String responseBodyString = response.getBody();
+                AuthResponseDto authResponseDto = objectMapper.readValue(responseBodyString, AuthResponseDto.class);
                 
                 String authToken = responseHeaders.getFirst("X-Subject-Token");
 
-                // LOGGER.info("token: {} | Expires at: {}",
-                //     authToken, 
-                //     authResponseDto.getToken().getExpiresAt()
-                // );
+                 LOGGER.info("token: {} | Expires at: {}",
+                     authToken, 
+                     authResponseDto.getToken().getExpiresAt()
+                );
 
                 endTime = System.currentTimeMillis();
                 // Calculate and log elapsed time in seconds

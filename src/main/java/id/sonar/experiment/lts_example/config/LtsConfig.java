@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import id.sonar.experiment.lts_example.dto.LabelDto;
+import id.sonar.experiment.lts_example.service.LtsApiService;
 
 @Configuration
 public class LtsConfig {
@@ -15,6 +16,7 @@ public class LtsConfig {
     String streamId;
     @Value("${app.endpoints.lts}")
     String apiEndpointString;
+
     @Bean
     public LabelDto stringLabels(){
         return LabelDto
@@ -32,5 +34,7 @@ public class LtsConfig {
             streamId);
 
     }
+    
+   
    
 }
